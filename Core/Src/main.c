@@ -18,7 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+int x;
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
