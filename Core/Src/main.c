@@ -21,7 +21,8 @@
 int x;
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "lcd.h"
+#include "keypad.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -88,7 +89,13 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
+  lcd_init();
+  keypad_init();
 
+  lcd_set_line(0);
+  lcd_print("Keypad test");
+  lcd_set_line(1);
+  lcd_print("Press a key");
   /* USER CODE END 2 */
 
   /* Initialize leds */
@@ -105,6 +112,19 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    int32_t key = keypad_getkey();
+
+    lcd_set_line(1);
+    lcd_print("                ");
+    lcd_set_line(1);
+
+    if (key == STAR) {
+      lcd_print("*");
+    } else if (key == POUND) {
+      lcd_print("#");
+    } else if (key >= 0 && key <= 9) {
+      lcd_data((uint8_t)(key + 0x30));
+    }
   }
   /* USER CODE END 3 */
 }
