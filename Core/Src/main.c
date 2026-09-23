@@ -10,13 +10,16 @@ void clear_input(void);
 void show_locked(void);
 void show_unlocked(void);
 void set_led(int locked);
-
+void show_set_pin(void);
+void show_confirm(void);
+void add_digit(int32_t key);
 typedef enum {
 	LOCKED, UNLOCKED, SET_PIN, CONFIRM,
 } state_t;
 
 static state_t state = LOCKED;
 static uint32_t curr_pin = DEFAULT_PIN;
+static uint32_t new_pin = 0;
 static uint32_t input = 0;
 static uint8_t digits = 0;
 static char typed[5];
@@ -43,40 +46,84 @@ int main(void) {
 	while (1) {
 		int32_t key = keypad_getkey();
 
-		if(state == LOCKED){
+		switch (state) {
+
+		case LOCKED:
 			if (key == STAR) {
+				clear_input();
+				show_locked();
+				set_led(LOCKED);
+				state = LOCKED;
+			} else if (key >= 0 && key <= 9 && digits < PIN_LEN) {
+				add_digit(key);
+				show_locked();
+				if (digits == PIN_LEN) {
+					if (input == curr_pin) {
+						state = UNLOCKED;
+						clear_input();
+						show_unlocked();
+						set_led(UNLOCKED);
+					} else {
 						clear_input();
 						show_locked();
-						set_led(LOCKED);
-						state = LOCKED;
-					}  else if (key >= 0 && key <= 9 && digits < PIN_LEN) {
-						typed[digits] = (char) (key + 0x30);
-						digits++;
-						typed[digits] = '\0';
-						input = input * 10 + key;
-						show_locked();
-						if(digits == PIN_LEN){
-							if(input == curr_pin){
-								state = UNLOCKED;
-								clear_input();
-								show_unlocked();
-								set_led(UNLOCKED);
-							} else {
-								clear_input();
-								show_locked();
-							}
-						}
 					}
-		} else if(state == UNLOCKED){
-			if(key == POUND){
-				// SET PIN
+				}
+			}
+			break;
+
+		case UNLOCKED:
+			if (key == POUND) {
+				clear_input();
+				state = SET_PIN;
+				show_set_pin();
 			} else {
 				clear_input();
 				state = LOCKED;
 				set_led(state);
 				show_locked();
 			}
+			break;
 
+		case SET_PIN:
+			if (key == STAR) {
+				clear_input();
+				show_set_pin();
+			} else if (key >= 0 && key <= 9 && digits < PIN_LEN) {
+				add_digit(key);
+				show_set_pin();
+				if (digits == PIN_LEN) {
+					new_pin = input;
+					clear_input();
+					state = CONFIRM;
+					show_confirm();
+				}
+			}
+			break;
+
+		case CONFIRM:
+
+			if (key == STAR) {
+				clear_input();
+				show_confirm();
+			} else if (key >= 0 && key <= 9 && digits < PIN_LEN) {
+				add_digit(key);
+				show_confirm();
+				if (digits == PIN_LEN) {
+					if (input == new_pin) {
+						curr_pin = new_pin;
+						clear_input();
+						state = UNLOCKED;
+						show_unlocked();
+					} else {
+						clear_input();
+						state = SET_PIN;
+						show_set_pin();
+					}
+				}
+			}
+			break;
+		default:
+			break;
 		}
 
 
@@ -110,15 +157,30 @@ void show_unlocked(void) {
 	show_screen("UNLOCKED", "PRESS KEY 2 LOCK");
 }
 
-void set_led(int locked){
-	if(locked == LOCKED){
+void show_set_pin(void) {
+	show_screen("NEW PIN", "");
+	lcd_print(typed);
+}
+
+void show_confirm(void) {
+	show_screen("CONFIRM", "");
+	lcd_print(typed);
+}
+
+void set_led(int locked) {
+	if (locked == LOCKED) {
 		BSP_LED_On(LED_GREEN);
 	} else {
 		BSP_LED_Off(LED_GREEN);
 	}
 }
 
-
+void add_digit(int32_t key) {
+	typed[digits] = (char) (key + 0x30);
+	digits++;
+	typed[digits] = '\0';
+	input = input * 10 + key;
+}
 /**
  * @brief System Clock Configuration
  * @retval None
