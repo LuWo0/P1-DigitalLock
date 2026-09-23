@@ -12,7 +12,10 @@ void show_unlocked(void);
 void set_led(int locked);
 void show_set_pin(void);
 void show_confirm(void);
+void show_saved(void);
 void add_digit(int32_t key);
+void unlock_animation(void);
+
 typedef enum {
 	LOCKED, UNLOCKED, SET_PIN, CONFIRM,
 } state_t;
@@ -61,8 +64,9 @@ int main(void) {
 					if (input == curr_pin) {
 						state = UNLOCKED;
 						clear_input();
-						show_unlocked();
 						set_led(UNLOCKED);
+						unlock_animation();
+						show_unlocked();
 					} else {
 						clear_input();
 						show_locked();
@@ -111,9 +115,12 @@ int main(void) {
 				if (digits == PIN_LEN) {
 					if (input == new_pin) {
 						curr_pin = new_pin;
-						clear_input();
-						state = UNLOCKED;
-						show_unlocked();
+							clear_input();
+							state = LOCKED;
+							set_led(LOCKED);
+							show_saved();
+							HAL_Delay(1000);
+							show_locked();
 					} else {
 						clear_input();
 						state = SET_PIN;
@@ -125,7 +132,6 @@ int main(void) {
 		default:
 			break;
 		}
-
 
 	}
 	/* USER CODE END 3 */
@@ -167,6 +173,10 @@ void show_confirm(void) {
 	lcd_print(typed);
 }
 
+void show_saved(void){
+	show_screen("NEW PIN SAVED", "");
+}
+
 void set_led(int locked) {
 	if (locked == LOCKED) {
 		BSP_LED_On(LED_GREEN);
@@ -181,6 +191,24 @@ void add_digit(int32_t key) {
 	typed[digits] = '\0';
 	input = input * 10 + key;
 }
+
+void unlock_animation(void) {
+	const char *frames[] = {
+		"[||||||||]",
+		"[||||||  ]",
+		"[||||    ]",
+		"[||      ]",
+		"[        ]",
+	};
+
+	lcd_command(0x0C); /* display on, cursor off */
+	for (int i = 0; i < 5; i++) {
+		show_screen("UNLOCKING", frames[i]);
+		HAL_Delay(150);
+	}
+	lcd_command(0x0F); /* cursor / blink back on */
+}
+
 /**
  * @brief System Clock Configuration
  * @retval None
