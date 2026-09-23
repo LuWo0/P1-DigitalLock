@@ -1,26 +1,21 @@
 #include "keypad.h"
 
-/*
- * Arduino-header wiring (male-to-male into female sockets):
- *   R1 PC7  D9     R2 PB9  D14    R3 PB8  D15    R4 PC1  A4
- *   C1 PB6  D10    C2 PA7  D11    C3 PA6  D12
- */
 typedef struct {
 	GPIO_TypeDef *port;
 	uint32_t pin;
 } keypad_pin_t;
 
 static const keypad_pin_t col_pin[NUM_OF_COLS] = {
-	{ GPIOB, GPIO_PIN_8 },  /* C1 D10 */
-	{ GPIOB, GPIO_PIN_9 },  /* C2 D11 */
-	{ GPIOC, GPIO_PIN_7 },  /* C3 D12 */
+	{ GPIOB, GPIO_PIN_8 },
+	{ GPIOB, GPIO_PIN_9 },
+	{ GPIOC, GPIO_PIN_7 },
 };
 
 static const keypad_pin_t row_pin[NUM_OF_ROWS] = {
-	{ GPIOA, GPIO_PIN_6 },  /* R1 D9  */
-	{ GPIOA, GPIO_PIN_7 },  /* R2 D14 */
-	{ GPIOB, GPIO_PIN_6 },  /* R3 D15 */
-	{ GPIOC, GPIO_PIN_1 },  /* R4 A4  */
+	{ GPIOA, GPIO_PIN_6 },
+	{ GPIOA, GPIO_PIN_7 },
+	{ GPIOB, GPIO_PIN_6 },
+	{ GPIOC, GPIO_PIN_1 },
 };
 
 static const int keymap[NUM_OF_ROWS][NUM_OF_COLS] = {
@@ -81,8 +76,7 @@ void keypad_init(void) {
 	for (int32_t c = 0; c < NUM_OF_COLS; c++) {
 		pin_output(col_pin[c].port, col_pin[c].pin);
 	}
-
-	/* All columns high so any press pulls its row high. */
+	// All columns high so any press pulls its row high
 	cols_all_high();
 }
 

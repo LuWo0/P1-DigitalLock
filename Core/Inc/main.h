@@ -70,9 +70,13 @@ void Error_Handler(void);
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 
+
+#define DEFAULT_PIN 1234
+#define PIN_LEN 	4
+
+
 /* USER CODE BEGIN Private defines */
 
-/* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,5 @@
-# macOS
 .DS_Store
 P1_Digital_Lock.md 
-# CubeIDE / Eclipse build output
 Debug/
 Release/
 *.elf
@@ -13,12 +11,8 @@ Release/
 *.d
 *.su
 *.cyclo
-
-# CubeIDE local / machine-specific
 .settings/language.settings.xml
 .settings/stm32cubeide.project.prefs
 *.launch
-
-# Editor junk
 *.swp
 *~
