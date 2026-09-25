@@ -16,21 +16,20 @@ void show_saved(void);
 void add_digit(int32_t key);
 void unlock_animation(void);
 
-
 typedef enum {
 	LOCKED, UNLOCKED, SET_PIN, CONFIRM,
 } state_t;
 
 static uint8_t lock_closed[8] = {
-	    0b01110,  //   ***
-	    0b10001,  //  *   *
-	    0b10001,  //  *   *
-	    0b11111,  //  *****
-	    0b11011,  //  ** **
-	    0b11011,  //  ** **
-	    0b11111,  //  *****
-	    0b00000   //
-};
+		0b01110,  //   ***
+		0b10001,  //  *   *
+		0b10001,  //  *   *
+		0b11111,  //  *****
+		0b11011,  //  ** **
+		0b11011,  //  ** **
+		0b11111,  //  *****
+		0b00000   //
+		};
 
 static state_t state = LOCKED;
 static uint32_t curr_pin = DEFAULT_PIN;
@@ -45,14 +44,12 @@ int main(void) {
 	SystemClock_Config();
 	MX_GPIO_Init();
 
-
 	lcd_init();
 	keypad_init();
 
 	BSP_LED_Init(LED_GREEN);
 	/* Initialize USER push-button, will be used to trigger an interrupt each time it's pressed.*/
 	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
-
 
 	typed[0] = '\0';
 
@@ -65,7 +62,7 @@ int main(void) {
 
 		switch (state) {
 
-		case LOCKED:
+		case LOCKED: // Checks 4 pin input
 			if (key == STAR) {
 				clear_input();
 				show_locked();
@@ -80,7 +77,6 @@ int main(void) {
 						clear_input();
 						set_led(UNLOCKED);
 						unlock_animation();
-//						unlock_animation();
 						show_unlocked();
 					} else {
 						clear_input();
@@ -90,7 +86,7 @@ int main(void) {
 			}
 			break;
 
-		case UNLOCKED:
+		case UNLOCKED: // Any key press re-locks, '#' for new PIN
 			if (key == POUND) {
 				clear_input();
 				state = SET_PIN;
@@ -103,7 +99,7 @@ int main(void) {
 			}
 			break;
 
-		case SET_PIN:
+		case SET_PIN: // Sets a new 4-digit PIN
 			if (key == STAR) {
 				clear_input();
 				show_set_pin();
@@ -119,7 +115,7 @@ int main(void) {
 			}
 			break;
 
-		case CONFIRM:
+		case CONFIRM: // Confirms new 4-digit PIN
 
 			if (key == STAR) {
 				clear_input();
@@ -179,16 +175,16 @@ void show_locked(void) {
 void show_unlocked(void) {
 	show_screen("UNLOCKED!!!", "PRESS KEY TO");
 	uint8_t slot = 1;
+	uint8_t cgram_address = slot * 8; // slot starts at byte 8
 
-	uint8_t cgram_address = slot * 8;
 
-	lcd_command(0x40 | cgram_address);
+	lcd_command(0x40 | cgram_address); // set cgram_address
 
 	for (int i = 0; i < 8; i++) {
-	    lcd_data(lock_closed[i]);
+		lcd_data(lock_closed[i]);
 	}
 
-	lcd_command(0x80 | (0x40 + 13));
+	lcd_command(0x80 | (0x40 + 13)); // row 2, column 13
 	lcd_data(slot);
 	lcd_command(0x0C); // set blinker off
 }
@@ -242,7 +238,6 @@ void unlock_animation(void) {
  * @brief System Clock Configuration
  * @retval None
  */
-
 
 void SystemClock_Config(void) {
 	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };

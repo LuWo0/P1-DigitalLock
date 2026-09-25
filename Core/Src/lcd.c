@@ -15,8 +15,8 @@ static void lcd_gpio_init(void) {
 	GPIOA->MODER &= ~((3U << 0) | (3U << 2) | (3U << 8) | (3U << 16)
 			| (3U << 18) | (3U << 20));
 
-	GPIOA->MODER |= ((1U << 0) | (1U << 2) | (1U << 8) | (1U << 16)
-			| (1U << 18)| (1U << 20));
+	GPIOA->MODER |= ((1U << 0) | (1U << 2) | (1U << 8) | (1U << 16) | (1U << 18)
+			| (1U << 20));
 
 	GPIOA->OTYPER &= ~(GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_4 |
 	GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10);
@@ -36,8 +36,7 @@ static void lcd_gpio_init(void) {
  */
 static void lcd_set_data(uint8_t data) {
 	uint32_t a_set = 0;
-	uint32_t a_rst = 0
-			;
+	uint32_t a_rst = 0;
 	uint32_t b_set = 0;
 	uint32_t b_rst = 0;
 
