@@ -16,9 +16,21 @@ void show_saved(void);
 void add_digit(int32_t key);
 void unlock_animation(void);
 
+
 typedef enum {
 	LOCKED, UNLOCKED, SET_PIN, CONFIRM,
 } state_t;
+
+static uint8_t lock_closed[8] = {
+	    0b01110,  //   ***
+	    0b10001,  //  *   *
+	    0b10001,  //  *   *
+	    0b11111,  //  *****
+	    0b11011,  //  ** **
+	    0b11011,  //  ** **
+	    0b11111,  //  *****
+	    0b00000   //
+};
 
 static state_t state = LOCKED;
 static uint32_t curr_pin = DEFAULT_PIN;
@@ -33,15 +45,17 @@ int main(void) {
 	SystemClock_Config();
 	MX_GPIO_Init();
 
+
 	lcd_init();
 	keypad_init();
 
 	BSP_LED_Init(LED_GREEN);
-
 	/* Initialize USER push-button, will be used to trigger an interrupt each time it's pressed.*/
 	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
 
+
 	typed[0] = '\0';
+
 	BSP_LED_On(LED_GREEN);
 	show_locked();
 	set_led(LOCKED);
@@ -66,6 +80,7 @@ int main(void) {
 						clear_input();
 						set_led(UNLOCKED);
 						unlock_animation();
+//						unlock_animation();
 						show_unlocked();
 					} else {
 						clear_input();
@@ -115,12 +130,12 @@ int main(void) {
 				if (digits == PIN_LEN) {
 					if (input == new_pin) {
 						curr_pin = new_pin;
-							clear_input();
-							state = LOCKED;
-							set_led(LOCKED);
-							show_saved();
-							HAL_Delay(1000);
-							show_locked();
+						clear_input();
+						state = LOCKED;
+						set_led(LOCKED);
+						show_saved();
+						HAL_Delay(1000);
+						show_locked();
 					} else {
 						clear_input();
 						state = SET_PIN;
@@ -155,12 +170,27 @@ void clear_input(void) {
 }
 
 void show_locked(void) {
-	show_screen("LOCKED", "ENTER KEY ");
+	show_screen("LOCKED", "ENTER KEY:");
 	lcd_print(typed);
+	lcd_command(0x0F); // cursor / blink back on
+
 }
 
 void show_unlocked(void) {
-	show_screen("UNLOCKED", "PRESS KEY 2 LOCK");
+	show_screen("UNLOCKED!!!", "PRESS KEY TO");
+	uint8_t slot = 1;
+
+	uint8_t cgram_address = slot * 8;
+
+	lcd_command(0x40 | cgram_address);
+
+	for (int i = 0; i < 8; i++) {
+	    lcd_data(lock_closed[i]);
+	}
+
+	lcd_command(0x80 | (0x40 + 13));
+	lcd_data(slot);
+	lcd_command(0x0C); // set blinker off
 }
 
 void show_set_pin(void) {
@@ -173,7 +203,7 @@ void show_confirm(void) {
 	lcd_print(typed);
 }
 
-void show_saved(void){
+void show_saved(void) {
 	show_screen("NEW PIN SAVED", "");
 }
 
@@ -194,25 +224,26 @@ void add_digit(int32_t key) {
 
 void unlock_animation(void) {
 	const char *frames[] = {
-		"[||||||||]",
-		"[||||||  ]",
-		"[||||    ]",
-		"[||      ]",
-		"[        ]",
-	};
+			"[        ]",
+			"[**      ]",
+			"[****    ]",
+			"[******  ]",
+			"[********]", };
 
-	lcd_command(0x0C); /* display on, cursor off */
+	lcd_command(0x0C); // display on, cursor off
 	for (int i = 0; i < 5; i++) {
 		show_screen("UNLOCKING", frames[i]);
-		HAL_Delay(150);
+		HAL_Delay(100);
 	}
-	lcd_command(0x0F); /* cursor / blink back on */
+	lcd_command(0x0F); // cursor / blink back on
 }
 
 /**
  * @brief System Clock Configuration
  * @retval None
  */
+
+
 void SystemClock_Config(void) {
 	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
